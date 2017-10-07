@@ -17,52 +17,51 @@ import android.widget.Toast;
 
 public class CountActivity extends AppCompatActivity {
 
-    Button btn;
-    TextView textView1;
-    CountDownTimer countDownTimer;
-    final int maxTimeSecond = 1001; // Количество секунд
-    String state; // Кнопка состояния
-    final String LOG_TAG = "myLogs";
-    static final String STATE_BUTTON = "stateButton";
-    static final String STATE_SECOND1 = "stateSecond";
-    public static volatile long currentSecond = 0;
+    private Button btn;
+    private TextView textView1;
+    private CountDownTimer countDownTimer;
+    private final int maxTimeSecond = 1001;
+    private boolean state;
+    private String STATE_BUTTON;
+    private String STATE_SECOND1;
+    private long currentSecond = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_count);
-        Log.d(LOG_TAG, "onCreate " + state);
+        STATE_BUTTON = this.getString(R.string.start_button);
+        STATE_SECOND1 = this.getString(R.string.state_second);
 
         btn = (Button) findViewById(R.id.button_count);
         textView1 = (TextView) findViewById(R.id.textView_count);
+        state = true;
 
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Log.d(LOG_TAG, "OnClick " + state + currentSecond);
-
                 if (btn.getText().toString().equals(getString(R.string.start_button))){
-                    btn.setText(R.string.stop_button);
-                    state = "Stop";
+                    btn.setText(getString(R.string.stop_button));
+                    state = false;
 
                     countDownTimer = new CountDownTimer(maxTimeSecond * 1000, 1_000) {
 
                         public void onTick(long millisUntilFinished) {
-                            currentSecond = maxTimeSecond - millisUntilFinished / 1000; // Сохраняем количество секунд для onSave
+                            currentSecond = maxTimeSecond - millisUntilFinished / 1000;
                             textView1.setText(stringCount(Math.abs(maxTimeSecond - millisUntilFinished  / 1000)));
                         }
 
                         public void onFinish() {
-                            btn.setText(R.string.start_button);
+                            btn.setText(getString(R.string.start_button));
                         }
                     }.start();
                 } else {
                     if (countDownTimer != null)
                         countDownTimer.cancel();
-                    btn.setText(R.string.start_button);
-                    state = "Start";
+                    btn.setText(getString(R.string.start_button));
+                    state = true;
                 }
             }
         });
@@ -79,59 +78,51 @@ public class CountActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if(state != null && state.equals("Stop")) {
-            btn.setText(R.string.stop_button);
+        if(!state) {
+            btn.setText(this.getString(R.string.stop_button));
             textView1.setText(stringCount(currentSecond));
 
             countDownTimer = new CountDownTimer((maxTimeSecond - currentSecond) * 1000, 1_000) {
 
                 public void onTick(long millisUntilFinished) {
                     currentSecond = maxTimeSecond - millisUntilFinished / 1000;
-                    Log.d(LOG_TAG, String.valueOf(Math.abs(maxTimeSecond - millisUntilFinished  / 1000) ) + " " + this +
-                            " current from OnResume " + currentSecond);
                     textView1.setText(stringCount(Math.abs(maxTimeSecond - millisUntilFinished  / 1000)));
                 }
 
                 public void onFinish() {
-                    btn.setText(R.string.start_button);
+                    btn.setText(getString(R.string.start_button));
                 }
             }.start();
         }
         else {
-            btn.setText(R.string.start_button);
+            btn.setText(this.getString(R.string.start_button));
             if(currentSecond != 0) {
                 textView1.setText(stringCount(currentSecond));
             }
         }
 
-        Log.d(LOG_TAG, "onResume " + state + currentSecond);
     }
 
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(STATE_BUTTON, state);
+        outState.putBoolean(STATE_BUTTON, state);
         outState.putLong(STATE_SECOND1, currentSecond);
         super.onSaveInstanceState(outState);
-        Log.d(LOG_TAG, "onSaveInstanceState" + state + currentSecond);
     }
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        state = savedInstanceState.getString(STATE_BUTTON);
+        state = savedInstanceState.getBoolean(STATE_BUTTON);
         currentSecond = savedInstanceState.getLong(STATE_SECOND1);
-        Log.d(LOG_TAG, "onRestoreInstanceState" + state + currentSecond);
     }
 
     public String stringCount(long second) {
-        String[] stringSecond = {"один","два","три","четыре","пять","шесть","семь","восемь",
-                "девять","десять","одиннадцать","двенадцать","тринадцать","четырнадцать","пятьнадцать","шестнадцать","семнадцать",
-                "восемнадцать","девятнадцать"};
-        String[] stringSecondDozen = {"двадцать","тридцать","сорок","пятьдесят","шестьдесят",
-                "семьдесят","восемьдесят","девяносто"};
-        String[] stringSecondHundred = {"сто","двести","триста","четыресто",
-                "пятьсот","шестьсот","семьсот","восемьсот","девятьсот"};
+        String[] stringSecond = getResources().getStringArray(R.array.countstringSecond);
+        String[] stringSecondDozen = getResources().getStringArray(R.array.countDozen);
+        String[] stringSecondHundred = getResources().getStringArray(R.array.countHundred);
+
         StringBuilder answer = new StringBuilder();
 
         if (second == 1000) {
-            return "тысяча";
+            return getResources().getString(R.string.lastNum);
         }
 
         long hundred = second / 100;
