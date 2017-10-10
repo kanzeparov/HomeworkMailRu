@@ -42,21 +42,12 @@ public class CountActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (btn.getText().toString().equals(getString(R.string.start_button))){
+                if (state){
                     btn.setText(getString(R.string.stop_button));
                     state = false;
 
-                    countDownTimer = new CountDownTimer(maxTimeSecond * 1000, 1_000) {
+                    startTimer(maxTimeSecond);
 
-                        public void onTick(long millisUntilFinished) {
-                            currentSecond = maxTimeSecond - millisUntilFinished / 1000;
-                            textView1.setText(stringCount(Math.abs(maxTimeSecond - millisUntilFinished  / 1000)));
-                        }
-
-                        public void onFinish() {
-                            btn.setText(getString(R.string.start_button));
-                        }
-                    }.start();
                 } else {
                     if (countDownTimer != null)
                         countDownTimer.cancel();
@@ -82,17 +73,8 @@ public class CountActivity extends AppCompatActivity {
             btn.setText(this.getString(R.string.stop_button));
             textView1.setText(stringCount(currentSecond));
 
-            countDownTimer = new CountDownTimer((maxTimeSecond - currentSecond) * 1000, 1_000) {
+            startTimer((int)(maxTimeSecond - currentSecond));
 
-                public void onTick(long millisUntilFinished) {
-                    currentSecond = maxTimeSecond - millisUntilFinished / 1000;
-                    textView1.setText(stringCount(Math.abs(maxTimeSecond - millisUntilFinished  / 1000)));
-                }
-
-                public void onFinish() {
-                    btn.setText(getString(R.string.start_button));
-                }
-            }.start();
         }
         else {
             btn.setText(this.getString(R.string.start_button));
@@ -101,6 +83,21 @@ public class CountActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+
+    public void startTimer(int second) {
+        countDownTimer = new CountDownTimer(second * 1000, 1_000) {
+
+            public void onTick(long millisUntilFinished) {
+                currentSecond = maxTimeSecond - millisUntilFinished / 1000;
+                textView1.setText(stringCount(Math.abs(maxTimeSecond - millisUntilFinished  / 1000)));
+            }
+
+            public void onFinish() {
+                btn.setText(getString(R.string.start_button));
+            }
+        }.start();
     }
 
     protected void onSaveInstanceState(Bundle outState) {
